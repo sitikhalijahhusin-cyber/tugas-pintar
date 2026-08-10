@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Senarai Tugasan</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#202124}.app{max-width:680px;margin:60px auto;padding:28px;background:white;border-radius:18px;box-shadow:0 8px 30px #00000012}h1{margin:0 0 6px}.subtitle{color:#6b7280;margin:0 0 24px}.form{display:flex;gap:10px}.form input{flex:1;padding:13px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}.form button{padding:0 20px;border:0;border-radius:10px;background:#2563eb;color:white;font-size:16px;cursor:pointer}.filters{display:flex;gap:8px;margin:22px 0 14px}.filters button{border:1px solid #ddd;background:white;padding:8px 13px;border-radius:20px;cursor:pointer}.filters .active{background:#2563eb;color:white;border-color:#2563eb}.stats{font-size:14px;color:#6b7280;margin-bottom:10px}.task{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid #eee}.task input{width:19px;height:19px}.task span{flex:1}.done{text-decoration:line-through;color:#9ca3af}.delete{border:0;background:none;color:#ef4444;cursor:pointer;font-size:18px}.empty{text-align:center;color:#9ca3af;padding:30px 0}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>Senarai Tugasan</h1>
+    <p class="subtitle">Urus tugasan harian dengan mudah.</p>
+    <form class="form" id="form"><input id="input" placeholder="Tambah tugasan..." autocomplete="off"/><button>Tambah</button></form>
+    <div class="filters"><button class="active" data-filter="all">Semua</button><button data-filter="active">Belum siap</button><button data-filter="done">Siap</button></div>
+    <div class="stats" id="stats"></div><section id="list"></section>
+  </main>
+<script>
+let tasks=JSON.parse(localStorage.getItem('tasks')||'[]');let filter='all';
+const save=()=>localStorage.setItem('tasks',JSON.stringify(tasks));
+function render(){const list=document.getElementById('list');const shown=tasks.filter(t=>filter==='all'||(filter==='done'?t.done:!t.done));document.getElementById('stats').textContent=`${tasks.filter(t=>!t.done).length} tugasan belum siap daripada ${tasks.length}`;list.innerHTML=shown.length?shown.map(t=>`<div class="task"><input type="checkbox" ${t.done?'checked':''} onchange="toggle(${t.id})"><span class="${t.done?'done':''}">${escapeHtml(t.text)}</span><button class="delete" onclick="removeTask(${t.id})" aria-label="Padam">×</button></div>`).join(''):'<div class="empty">Tiada tugasan.</div>';document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+document.getElementById('form').onsubmit=e=>{e.preventDefault();const input=document.getElementById('input');const text=input.value.trim();if(!text)return;tasks.push({id:Date.now(),text,done:false});input.value='';save();render();input.focus()};
+function toggle(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save();render()};function removeTask(id){tasks=tasks.filter(t=>t.id!==id);save();render()};document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});render();
+</script>
+</body></html>
